@@ -22,7 +22,7 @@ RUN add-apt-repository -y ppa:ondrej/php && apt-get update
 
 ## Instalando PHP e extensões
 RUN apt-get -y install php8.2 php8.2-redis php8.2-fpm php8.2-common php8.2-curl \
-php8.2-dev php8.2-mbstring php8.2-gd php8.2-json php8.2-redis php8.2-xml php8.2-zip \
+php8.2-dev php8.2-mbstring php8.2-gd php8.2-redis php8.2-xml php8.2-zip \
 php8.2-intl php8.2-mysql php8.2-exif php8.2-cli php8.2-soap
 
 ## Baixar última versão do composer
