@@ -23,7 +23,9 @@ RUN curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor \
     apt-get update && \
     apt-get -y install nginx && \
     mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled && \
-    sed -i '/include \/etc\/nginx\/conf\.d/a\    include /etc/nginx/sites-enabled/*;' /etc/nginx/nginx.conf
+    sed -i '/include \/etc\/nginx\/conf\.d/a\    include /etc/nginx/sites-enabled/*;' /etc/nginx/nginx.conf && \
+    rm -f /etc/nginx/conf.d/default.conf && \
+    sed -i 's/^user  nginx;/user www-data;/' /etc/nginx/nginx.conf
 
 ## Adicionando repositório PHP
 RUN add-apt-repository -y ppa:ondrej/php && apt-get update
