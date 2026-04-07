@@ -14,8 +14,16 @@ RUN apt-get -y install apt-utils software-properties-common curl bash-completion
 RUN ln -f -s /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
 RUN locale-gen pt_BR.UTF-8
 
-## Instalar NGINX
-RUN apt-get -y install nginx
+## Instalar NGINX (repositório oficial — sem CVEs 2018-16845, 2021-23017, 2023-44487)
+RUN curl https://nginx.org/keys/nginx_signing.key | gpg --dearmor \
+      > /usr/share/keyrings/nginx-archive-keyring.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
+      http://nginx.org/packages/ubuntu focal nginx" \
+      > /etc/apt/sources.list.d/nginx.list && \
+    apt-get update && \
+    apt-get -y install nginx && \
+    mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled && \
+    sed -i '/include \/etc\/nginx\/conf\.d/a\    include /etc/nginx/sites-enabled/*;' /etc/nginx/nginx.conf
 
 ## Adicionando repositório PHP
 RUN add-apt-repository -y ppa:ondrej/php && apt-get update
