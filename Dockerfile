@@ -17,6 +17,9 @@ RUN locale-gen pt_BR.UTF-8
 ## Instalar NGINX
 RUN apt-get -y install nginx
 
+## Repetir downloads que falham (o PPA devolve 503 quando sobrecarregado)
+RUN echo 'Acquire::Retries "10";' > /etc/apt/apt.conf.d/80-retries
+
 ## Adicionando repositório PHP
 RUN add-apt-repository -y ppa:ondrej/php && apt-get update
 
