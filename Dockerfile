@@ -14,18 +14,16 @@ RUN apt-get -y install apt-utils software-properties-common curl bash-completion
 RUN ln -f -s /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
 RUN locale-gen pt_BR.UTF-8
 
-## Instalar NGINX (repositório oficial — sem CVEs 2018-16845, 2021-23017, 2023-44487)
+## Instalar NGINX
 RUN apt-get -y install nginx
-
-RUN echo 'Acquire::Retries "10";' > /etc/apt/apt.conf.d/80-retries
 
 ## Adicionando repositório PHP
 RUN add-apt-repository -y ppa:ondrej/php && apt-get update
 
 ## Instalando PHP e extensões
-RUN apt-get -y install php7.4 php7.4-redis php7.4-fpm php7.4-common php7.4-curl \
-php7.4-dev php7.4-mbstring php7.4-gd php7.4-json php7.4-redis php7.4-xml php7.4-zip \
-php7.4-intl php7.4-mysql php7.4-exif php7.4-cli php7.4-soap
+RUN apt-get -y install php7.3 php7.3-fpm php7.3-cli php7.3-common php7.3-curl \
+php7.3-dev php7.3-mbstring php7.3-gd php7.3-json php7.3-redis php7.3-xml php7.3-zip \
+php7.3-intl php7.3-mysql php7.3-soap php7.3-bcmath php7.3-imagick
 
 ## Baixar última versão do composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -37,4 +35,4 @@ RUN rm -rf /tmp/pear \
 
 EXPOSE 80
 
-CMD service php7.4-fpm start && nginx -g "daemon off;"
+CMD service php7.3-fpm start && nginx -g "daemon off;"
