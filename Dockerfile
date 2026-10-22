@@ -18,7 +18,7 @@ RUN ln -f -s /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
 RUN locale-gen pt_BR.UTF-8
 
 ## Instalar NGINX
-RUN apt-get -y install nginx
+#RUN apt-get -y install nginx
 
 ## Adicionando repositório PHP
 RUN add-apt-repository -y ppa:ondrej/php && apt-get update
@@ -50,12 +50,6 @@ RUN pecl -d php_suffix=8.0 install sqlsrv-5.11.1 pdo_sqlsrv-5.11.1 \
     && printf "; priority=30\nextension=pdo_sqlsrv.so\n" > /etc/php/8.0/mods-available/pdo_sqlsrv.ini \
     && phpenmod -v 8.0 sqlsrv pdo_sqlsrv
 
-## Instalando SSH
-RUN apt-get -y install openssh-client openssh-server sshpass \
-    && mkdir -p /run/sshd
-RUN echo 'root:root' | chpasswd
-RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-
 ## Instalando LibreOffice e unoconv (via apt, pip global é bloqueado pela PEP 668)
 RUN apt-get -y install --no-install-recommends libreoffice unoconv
 
@@ -67,6 +61,10 @@ RUN rm -rf /tmp/pear \
     && apt-get purge -y --auto-remove \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-EXPOSE 80 22
+RUN sed -i 's|^listen = .*|listen = 9000|' /etc/php/8.0/fpm/pool.d/www.conf \
+    && sed -i 's|^;clear_env = no|clear_env = no|' /etc/php/8.0/fpm/pool.d/www.conf \
+    && mkdir -p /run/php
 
-CMD service ssh start && service php8.0-fpm start && nginx -g "daemon off;"
+CMD ["sh", "-c", "exec php-fpm8.0 -F"]
+
+
