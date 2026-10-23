@@ -17,9 +17,6 @@ RUN apt-get -y install apt-utils software-properties-common curl gnupg bash-comp
 RUN ln -f -s /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
 RUN locale-gen pt_BR.UTF-8
 
-## Instalar NGINX
-#RUN apt-get -y install nginx
-
 ## Adicionando repositório PHP
 RUN add-apt-repository -y ppa:ondrej/php && apt-get update
 
@@ -40,9 +37,10 @@ RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
       > /etc/apt/sources.list.d/mssql-release.list \
     && apt-get update
 
-## Instalando driver ODBC 18 e ferramentas (sqlcmd/bcp)
-RUN ACCEPT_EULA=Y apt-get -y install msodbcsql18 mssql-tools18 unixodbc-dev
-ENV PATH="${PATH}:/opt/mssql-tools18/bin"
+## Instalando driver ODBC 17 e ferramentas (sqlcmd/bcp)
+## O 17 não exige certificado confiável no SQL Server (o 18 exige por padrão)
+RUN ACCEPT_EULA=Y apt-get -y install msodbcsql17 mssql-tools unixodbc-dev
+ENV PATH="${PATH}:/opt/mssql-tools/bin"
 
 ## Instalando sqlsrv e pdo_sqlsrv (5.11.1 é a última versão compatível com PHP 8.0)
 RUN pecl -d php_suffix=8.0 install sqlsrv-5.11.1 pdo_sqlsrv-5.11.1 \
@@ -59,15 +57,17 @@ RUN apt-get -y install php8.0-xdebug
 ## Baixar última versão do composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+## PHP-FPM escutando na porta 9000 (o nginx usa fastcgi_pass app:9000)
+## e repassando as variáveis de ambiente do container para o PHP
+RUN sed -i 's|^listen = .*|listen = 9000|' /etc/php/8.0/fpm/pool.d/www.conf \
+    && sed -i 's|^;clear_env = no|clear_env = no|' /etc/php/8.0/fpm/pool.d/www.conf \
+    && mkdir -p /run/php
+
 ## Limpar
 RUN rm -rf /tmp/pear \
     && apt-get purge -y --auto-remove \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN sed -i 's|^listen = .*|listen = 9000|' /etc/php/8.0/fpm/pool.d/www.conf \
-    && sed -i 's|^;clear_env = no|clear_env = no|' /etc/php/8.0/fpm/pool.d/www.conf \
-    && mkdir -p /run/php
+EXPOSE 9000
 
 CMD ["sh", "-c", "exec php-fpm8.0 -F"]
-
-
